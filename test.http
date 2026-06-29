@@ -160,3 +160,22 @@ POST {{walletHost}}/api/wallets/999/deposit
 Content-Type: application/json
 
 { "amount": 5000.00, "paymentMethod": "CREDIT_CARD" }
+
+###############################################################################
+# BADWALLET-API (8080) — Retraits
+###############################################################################
+
+# NOTE : les retraits ci-dessous supposent que la wallet +221779998877 existe
+# avec du solde (creee par la requete de creation nominale plus haut).
+
+### Retrait normal (frais 1%) — attendu: 200
+POST {{walletHost}}/api/wallets/withdraw
+Content-Type: application/json
+
+{ "phoneNumber": "+221779998877", "amount": 10000.00 }
+
+### Retrait montant superieur au solde — attendu: 400
+POST {{walletHost}}/api/wallets/withdraw
+Content-Type: application/json
+
+{ "phoneNumber": "+221779998877", "amount": 99999999.00 }

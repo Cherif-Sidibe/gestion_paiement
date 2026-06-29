@@ -1,6 +1,7 @@
 package edu.ism.badwallet.client.web.transaction;
 
 import edu.ism.badwallet.client.web.transaction.dto.DepositResponseDto;
+import edu.ism.badwallet.client.web.transaction.dto.WithdrawResponseDto;
 import edu.ism.badwallet.shared.mapper.DateMapper;
 import edu.ism.badwallet.transaction.Transaction;
 import edu.ism.badwallet.wallet.Wallet;
@@ -29,6 +30,25 @@ public class TransactionMapper {
                 .phoneNumber(wallet != null ? wallet.getPhoneNumber() : null)
                 .currency(wallet != null ? wallet.getCurrency() : null)
                 .amount(tx.getAmount())
+                .newBalance(wallet != null ? wallet.getBalance() : null)
+                .type(tx.getType() != null ? tx.getType().name() : null)
+                .paymentMethod(tx.getPaymentMethod() != null ? tx.getPaymentMethod().name() : null)
+                .createdAt(dateMapper.formatLocalDateTime(tx.getCreatedAt(), "dd/MM/yyyy HH:mm:ss"))
+                .build();
+    }
+
+    public WithdrawResponseDto toWithdrawDto(Transaction tx) {
+        if (tx == null) {
+            return null;
+        }
+        Wallet wallet = tx.getWallet();
+        return WithdrawResponseDto.builder()
+                .walletId(wallet != null ? wallet.getId() : null)
+                .code(wallet != null ? wallet.getCode() : null)
+                .phoneNumber(wallet != null ? wallet.getPhoneNumber() : null)
+                .currency(wallet != null ? wallet.getCurrency() : null)
+                .amount(tx.getAmount())
+                .fees(tx.getFees())
                 .newBalance(wallet != null ? wallet.getBalance() : null)
                 .type(tx.getType() != null ? tx.getType().name() : null)
                 .paymentMethod(tx.getPaymentMethod() != null ? tx.getPaymentMethod().name() : null)
