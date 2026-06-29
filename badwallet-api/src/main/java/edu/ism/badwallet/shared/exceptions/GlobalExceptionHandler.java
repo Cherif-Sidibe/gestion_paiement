@@ -30,6 +30,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(400).body(RestResponse.error(ex.getMessage(), HttpStatus.BAD_REQUEST));
     }
 
+    @ExceptionHandler(SameWalletTransferException.class)
+    public ResponseEntity<RestResponse> handleSameWalletTransferException(SameWalletTransferException ex) {
+        return ResponseEntity.status(400).body(RestResponse.error(ex.getMessage(), HttpStatus.BAD_REQUEST));
+    }
+
+    @ExceptionHandler(PaymentServiceUnavailableException.class)
+    public ResponseEntity<RestResponse> handlePaymentServiceUnavailableException(PaymentServiceUnavailableException ex) {
+        return ResponseEntity.status(503).body(RestResponse.error(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE));
+    }
+
+    @ExceptionHandler(PaymentRejectedException.class)
+    public ResponseEntity<RestResponse> handlePaymentRejectedException(PaymentRejectedException ex) {
+        return ResponseEntity.status(ex.getStatus().value())
+                .body(RestResponse.error(ex.getMessage(), ex.getStatus()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<RestResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
