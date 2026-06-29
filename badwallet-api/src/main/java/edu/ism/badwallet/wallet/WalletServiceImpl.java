@@ -4,6 +4,8 @@ import edu.ism.badwallet.client.web.wallet.WalletCreateMapper;
 import edu.ism.badwallet.client.web.wallet.dto.WalletCreateRequestDto;
 import edu.ism.badwallet.client.web.wallet.dto.WalletCreateResponseDto;
 import jakarta.persistence.EntityExistsException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,5 +33,10 @@ public class WalletServiceImpl implements WalletService {
         Wallet walletEntity = walletCreateMapper.toEntity(walletCreateRequestDto);
         walletRepository.save(walletEntity);
         return walletCreateMapper.toDto(walletEntity);
+    }
+
+    @Override
+    public Page<Wallet> findAllWallets(Pageable pageable) {
+        return walletRepository.findAll(pageable);
     }
 }
