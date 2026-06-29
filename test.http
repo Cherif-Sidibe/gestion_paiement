@@ -82,6 +82,21 @@ Content-Type: application/json
 }
 
 ###############################################################################
+# PROXY FACTURES (badwallet 8080 -> payment-service 8081)
+# Pattern Proxy : badwallet relaie ces requetes vers payment-service par un
+# vrai appel HTTP. LES DEUX SERVICES DOIVENT TOURNER (8080 ET 8081).
+###############################################################################
+
+### P1) Proxy current (tous) wallet 3 — attendu: 200, factures relayees de 8081
+GET {{walletHost}}/api/external/factures/WLT-0000003/current
+
+### P2) Proxy current filtre WOYAFAL wallet 3 — attendu: 200, relai filtre
+GET {{walletHost}}/api/external/factures/WLT-0000003/current?unite=WOYAFAL
+
+### P3) Proxy periode 2026-05-01 -> 2026-07-01 wallet 3 — attendu: 200, relai
+GET {{walletHost}}/api/external/factures/WLT-0000003/periode?debut=2026-05-01&fin=2026-07-01
+
+###############################################################################
 # BADWALLET-API (8080) — Wallets
 ###############################################################################
 

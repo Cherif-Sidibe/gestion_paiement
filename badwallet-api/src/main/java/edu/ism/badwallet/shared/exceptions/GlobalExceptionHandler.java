@@ -35,6 +35,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(400).body(RestResponse.error(ex.getMessage(), HttpStatus.BAD_REQUEST));
     }
 
+    @ExceptionHandler(PaymentServiceUnavailableException.class)
+    public ResponseEntity<RestResponse> handlePaymentServiceUnavailableException(PaymentServiceUnavailableException ex) {
+        return ResponseEntity.status(503).body(RestResponse.error(ex.getMessage(), HttpStatus.SERVICE_UNAVAILABLE));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<RestResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
