@@ -217,3 +217,42 @@ POST {{walletHost}}/api/wallets/transfer
 Content-Type: application/json
 
 { "senderPhone": "+221779998877", "receiverPhone": "+221770000002", "amount": 99999999.00 }
+
+###############################################################################
+# BADWALLET-API (8080) — Historique
+###############################################################################
+
+# Section auto-suffisante : cree sa propre wallet +221770000050, fait 1 depot et
+# 1 retrait dessus, puis liste son historique (du plus recent au plus ancien).
+# L'id renvoye a la creation est reutilise pour le depot (endpoint par id).
+
+### Creation wallet pour historique — attendu: 201
+# @name histWallet
+POST {{walletHost}}/api/wallets
+Content-Type: application/json
+
+{
+  "phoneNumber": "+221770000050",
+  "email": "historique@gmail.com",
+  "initialBalance": 25000,
+  "code": "WLT-HIST050",
+  "currency": "XOF"
+}
+
+### Depot sur cette wallet — attendu: 200
+POST {{walletHost}}/api/wallets/{{histWallet.response.body.$.body.id}}/deposit
+Content-Type: application/json
+
+{ "amount": 15000.00, "paymentMethod": "CREDIT_CARD" }
+
+### Retrait sur cette wallet — attendu: 200
+POST {{walletHost}}/api/wallets/withdraw
+Content-Type: application/json
+
+{ "phoneNumber": "+221770000050", "amount": 5000.00 }
+
+### Historique des transactions — attendu: 200 (DEPOT + RETRAIT listes)
+GET {{walletHost}}/api/wallets/+221770000050/transactions
+
+### Historique wallet inexistante — attendu: 404
+GET {{walletHost}}/api/wallets/+221700000000/transactions

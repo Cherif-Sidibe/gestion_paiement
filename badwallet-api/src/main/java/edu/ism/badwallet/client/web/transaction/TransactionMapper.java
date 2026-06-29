@@ -1,6 +1,7 @@
 package edu.ism.badwallet.client.web.transaction;
 
 import edu.ism.badwallet.client.web.transaction.dto.DepositResponseDto;
+import edu.ism.badwallet.client.web.transaction.dto.TransactionResponseDto;
 import edu.ism.badwallet.client.web.transaction.dto.TransferResponseDto;
 import edu.ism.badwallet.client.web.transaction.dto.WithdrawResponseDto;
 import edu.ism.badwallet.shared.mapper.DateMapper;
@@ -54,6 +55,20 @@ public class TransactionMapper {
                 .fees(tx.getFees())
                 .newBalance(wallet != null ? wallet.getBalance() : null)
                 .type(tx.getType() != null ? tx.getType().name() : null)
+                .paymentMethod(tx.getPaymentMethod() != null ? tx.getPaymentMethod().name() : null)
+                .createdAt(dateMapper.formatLocalDateTime(tx.getCreatedAt(), "dd/MM/yyyy HH:mm:ss"))
+                .build();
+    }
+
+    public TransactionResponseDto toTransactionDto(Transaction tx) {
+        if (tx == null) {
+            return null;
+        }
+        return TransactionResponseDto.builder()
+                .id(tx.getId())
+                .type(tx.getType() != null ? tx.getType().name() : null)
+                .amount(tx.getAmount())
+                .fees(tx.getFees())
                 .paymentMethod(tx.getPaymentMethod() != null ? tx.getPaymentMethod().name() : null)
                 .createdAt(dateMapper.formatLocalDateTime(tx.getCreatedAt(), "dd/MM/yyyy HH:mm:ss"))
                 .build();
