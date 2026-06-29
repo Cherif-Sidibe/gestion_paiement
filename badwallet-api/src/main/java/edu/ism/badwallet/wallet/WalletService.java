@@ -9,4 +9,8 @@ public interface WalletService {
     WalletCreateResponseDto createWallet(WalletCreateRequestDto walletCreateRequestDto);
 
     Page<Wallet> findAllWallets(Pageable pageable);
+
+    Wallet getWalletByPhone(String phone);
+
+    Wallet getBalanceByPhone(String phone);
 }

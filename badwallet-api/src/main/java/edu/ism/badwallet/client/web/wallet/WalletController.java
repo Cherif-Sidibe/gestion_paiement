@@ -1,5 +1,6 @@
 package edu.ism.badwallet.client.web.wallet;
 
+import edu.ism.badwallet.client.web.wallet.dto.WalletBalanceResponseDto;
 import edu.ism.badwallet.client.web.wallet.dto.WalletCreateRequestDto;
 import edu.ism.badwallet.client.web.wallet.dto.WalletCreateResponseDto;
 import edu.ism.badwallet.client.web.wallet.dto.WalletResponseDto;
@@ -43,5 +44,19 @@ public class WalletController {
 
         Page<WalletResponseDto> dtoPage = wallets.map(walletMapper::toDto);
         return ResponseEntity.status(HttpStatus.OK).body(PageResponse.fromPage(dtoPage));
+    }
+
+    @GetMapping("/{phone:.+}")
+    public ResponseEntity<RestResponse<WalletResponseDto>> getWalletByPhone(@PathVariable String phone) {
+        Wallet wallet = walletService.getWalletByPhone(phone);
+        WalletResponseDto dto = walletMapper.toDto(wallet);
+        return ResponseEntity.status(HttpStatus.OK).body(RestResponse.success(dto, HttpStatus.OK));
+    }
+
+    @GetMapping("/{phone:.+}/balance")
+    public ResponseEntity<RestResponse<WalletBalanceResponseDto>> getBalanceByPhone(@PathVariable String phone) {
+        Wallet wallet = walletService.getBalanceByPhone(phone);
+        WalletBalanceResponseDto dto = walletMapper.toBalanceDto(wallet);
+        return ResponseEntity.status(HttpStatus.OK).body(RestResponse.success(dto, HttpStatus.OK));
     }
 }
