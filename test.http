@@ -271,3 +271,96 @@ GET {{walletHost}}/api/wallets/+221770000050/transactions
 
 ### Historique wallet inexistante — attendu: 404
 GET {{walletHost}}/api/wallets/+221700000000/transactions
+
+###############################################################################
+# PAIEMENT FACTURES (badwallet 8080, debite wallet + relaie payment-service 8081)
+# badwallet DEBITE la wallet PUIS marque les factures payees cote payment-service
+# par un appel HTTP. Debit-avant-appel + @Transactional => tout-ou-rien : si
+# payment-service refuse ou est injoignable, le debit est annule (rollback).
+#
+# PREREQUIS : LES DEUX SERVICES DOIVENT TOURNER (8080 ET 8081).
+# Rejouer payment-service (base H2 en memoire, reseedee au demarrage) avant cette
+# section pour que les factures ISM de WLT-0000003 soient impayees (le bloc direct
+# pay-current/pay-by-references plus haut les aurait deja payees).
+###############################################################################
+
+### PF1) Creer la wallet WLT-0000003 cote badwallet (phone +221770000003, solde 500000)
+# Le CODE doit valoir WLT-0000003 : c'est lui qu'attend payment-service.
+# attendu: 201 (ou 409 si la wallet existe deja)
+POST {{walletHost}}/api/wallets
+Content-Type: application/json
+
+{
+  "phoneNumber": "+221770000003",
+  "email": "client3@gmail.com",
+  "initialBalance": 500000,
+  "code": "WLT-0000003",
+  "currency": "XOF"
+}
+
+### PF2) Solde initial — attendu: 200, balance 500000
+GET {{walletHost}}/api/wallets/+221770000003/balance
+
+### PF3) /pay : paie la facture ISM du mois courant (150000) — attendu: 200, solde -> 350000
+# Debite 150000 puis relaie payment-service pay-current (FAC-ISM-3-6 marquee payee).
+POST {{walletHost}}/api/wallets/pay
+Content-Type: application/json
+
+{
+  "phoneNumber": "+221770000003",
+  "serviceName": "ISM",
+  "amount": 150000
+}
+
+### PF4) Verifier cote payment-service : ISM du mois courant n'apparait plus — attendu: 200, body []
+GET {{paymentHost}}/api/factures/WLT-0000003/current?unite=ISM
+
+### PF5) /pay-factures : paie FAC-ISM-3-1 (150000) — attendu: 200, solde -> 200000
+# Total calcule via payment-service (factures impayees) puis debit puis relai pay-by-references.
+POST {{walletHost}}/api/wallets/pay-factures
+Content-Type: application/json
+
+{
+  "phoneNumber": "+221770000003",
+  "serviceName": "ISM",
+  "factureReferences": ["FAC-ISM-3-1"]
+}
+
+### PF6) Solde apres les deux paiements — attendu: 200, balance 200000
+GET {{walletHost}}/api/wallets/+221770000003/balance
+
+### PF7) Historique : 2 transactions PAIEMENT de 150000 — attendu: 200
+GET {{walletHost}}/api/wallets/+221770000003/transactions
+
+### PF8) ERREUR solde insuffisant — attendu: 400, AUCUN debit (solde inchange)
+# Le controle de solde precede tout appel distant : rien n'est debite.
+POST {{walletHost}}/api/wallets/pay
+Content-Type: application/json
+
+{
+  "phoneNumber": "+221770000003",
+  "serviceName": "WOYAFAL",
+  "amount": 999999999
+}
+
+### PF9) ERREUR reference inconnue/deja payee — attendu: 409, AUCUN debit (rejet AVANT debit)
+POST {{walletHost}}/api/wallets/pay-factures
+Content-Type: application/json
+
+{
+  "phoneNumber": "+221770000003",
+  "serviceName": "ISM",
+  "factureReferences": ["FAC-ISM-3-999"]
+}
+
+### PF10) ERREUR payment-service injoignable — attendu: 503, solde INCHANGE (rollback du debit)
+# Pour reproduire : ARRETER payment-service (8081), puis lancer cette requete sur une
+# facture impayee (ex. WOYAFAL mois courant). Le debit est annule par le @Transactional.
+POST {{walletHost}}/api/wallets/pay
+Content-Type: application/json
+
+{
+  "phoneNumber": "+221770000003",
+  "serviceName": "WOYAFAL",
+  "amount": 15000
+}
