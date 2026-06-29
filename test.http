@@ -1,0 +1,82 @@
+###############################################################################
+# test.http — Livrable de test gestion_paiement (REST Client VSCode)
+# Mois courant = 2026-06. Requetes mutent l'etat : jouer de haut en bas.
+###############################################################################
+@walletHost = http://localhost:8080
+@paymentHost = http://localhost:8081
+
+###############################################################################
+# PAYMENT-SERVICE (8081) — tests directs
+###############################################################################
+
+### 1) Impayees mois courant wallet 3 (tous) — attendu: 200
+GET {{paymentHost}}/api/factures/WLT-0000003/current
+
+### 2) Impayees mois courant wallet 3 (WOYAFAL) — attendu: 200
+GET {{paymentHost}}/api/factures/WLT-0000003/current?unite=WOYAFAL
+
+### 3) Impayees mois courant wallet 3 (ISM) — attendu: 200
+GET {{paymentHost}}/api/factures/WLT-0000003/current?unite=ISM
+
+### 4) Impayees periode 2026-05-01 -> 2026-07-01 wallet 3 — attendu: 200
+GET {{paymentHost}}/api/factures/WLT-0000003/periode?debut=2026-05-01&fin=2026-07-01
+
+### 5) Pay-current ISM montant errone — attendu: 400
+POST {{paymentHost}}/api/factures/pay-current
+Content-Type: application/json
+
+{
+  "walletCode": "WLT-0000003",
+  "service": "ISM",
+  "amount": 1
+}
+
+### 6) Pay-current ISM mois courant — attendu: 200
+POST {{paymentHost}}/api/factures/pay-current
+Content-Type: application/json
+
+{
+  "walletCode": "WLT-0000003",
+  "service": "ISM",
+  "amount": 150000
+}
+
+### 7) Pay-by-references ISM wallet 3 — attendu: 200
+POST {{paymentHost}}/api/factures/pay-by-references
+Content-Type: application/json
+
+{
+  "walletCode": "WLT-0000003",
+  "service": "ISM",
+  "references": ["FAC-ISM-3-1", "FAC-ISM-3-3"]
+}
+
+### 8) Pay-by-references reference deja payee — attendu: 409
+POST {{paymentHost}}/api/factures/pay-by-references
+Content-Type: application/json
+
+{
+  "walletCode": "WLT-0000003",
+  "service": "ISM",
+  "references": ["FAC-ISM-3-1"]
+}
+
+### 9) Pay-by-references reference d'une autre wallet — attendu: 400
+POST {{paymentHost}}/api/factures/pay-by-references
+Content-Type: application/json
+
+{
+  "walletCode": "WLT-0000003",
+  "service": "ISM",
+  "references": ["FAC-ISM-1-1"]
+}
+
+### 10) Pay-by-references reference inconnue — attendu: 404
+POST {{paymentHost}}/api/factures/pay-by-references
+Content-Type: application/json
+
+{
+  "walletCode": "WLT-0000003",
+  "service": "ISM",
+  "references": ["FAC-ISM-3-999"]
+}

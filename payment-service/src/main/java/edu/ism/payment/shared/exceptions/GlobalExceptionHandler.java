@@ -40,6 +40,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(400).body(RestResponse.error(ex.getMessage(), HttpStatus.BAD_REQUEST));
     }
 
+    @ExceptionHandler(InvalidAmountException.class)
+    public ResponseEntity<RestResponse> handleInvalidAmountException(InvalidAmountException ex) {
+        return ResponseEntity.status(400).body(RestResponse.error(ex.getMessage(), HttpStatus.BAD_REQUEST));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<RestResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();

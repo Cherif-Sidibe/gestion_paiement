@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import edu.ism.payment.shared.exceptions.FactureAlreadyPaidException;
 import edu.ism.payment.shared.exceptions.FactureNotForWalletException;
 import edu.ism.payment.shared.exceptions.FactureNotFoundException;
+import edu.ism.payment.shared.exceptions.InvalidAmountException;
 
 @Service
 public class FactureServiceImpl implements FactureService {
@@ -51,6 +52,13 @@ public class FactureServiceImpl implements FactureService {
         if (facture.isPayee()) {
             throw new FactureAlreadyPaidException(
                     "La facture " + facture.getReference() + " du mois courant est deja payee");
+        }
+
+        // Regle metier : le montant envoye doit correspondre au montant de la facture.
+        if (facture.getMontant().compareTo(amount) != 0) {
+            throw new InvalidAmountException(
+                    "Le montant envoye (" + amount + ") ne correspond pas au montant de la facture "
+                            + facture.getReference() + " (" + facture.getMontant() + ")");
         }
 
         facture.setPayee(true);
