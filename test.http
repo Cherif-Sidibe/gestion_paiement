@@ -179,3 +179,41 @@ POST {{walletHost}}/api/wallets/withdraw
 Content-Type: application/json
 
 { "phoneNumber": "+221779998877", "amount": 99999999.00 }
+
+###############################################################################
+# BADWALLET-API (8080) — Transferts
+###############################################################################
+
+# NOTE : les transferts supposent deux wallets existantes : l'emettrice
+# +221779998877 (creee plus haut, solde 25000) et la receptrice +221770000002
+# (creee ci-dessous).
+
+### Creation de la wallet receptrice +221770000002 — attendu: 201
+POST {{walletHost}}/api/wallets
+Content-Type: application/json
+
+{
+  "phoneNumber": "+221770000002",
+  "email": "receveur@gmail.com",
+  "initialBalance": 0,
+  "code": "WLT-TEST002",
+  "currency": "XOF"
+}
+
+### Transfert entre deux wallets — attendu: 200
+POST {{walletHost}}/api/wallets/transfer
+Content-Type: application/json
+
+{ "senderPhone": "+221779998877", "receiverPhone": "+221770000002", "amount": 2000.00 }
+
+### Transfert vers soi-meme — attendu: 400
+POST {{walletHost}}/api/wallets/transfer
+Content-Type: application/json
+
+{ "senderPhone": "+221779998877", "receiverPhone": "+221779998877", "amount": 1000.00 }
+
+### Transfert montant superieur au solde — attendu: 400
+POST {{walletHost}}/api/wallets/transfer
+Content-Type: application/json
+
+{ "senderPhone": "+221779998877", "receiverPhone": "+221770000002", "amount": 99999999.00 }
