@@ -1,0 +1,181 @@
+###############################################################################
+# test.http — Livrable de test gestion_paiement (REST Client VSCode)
+# Mois courant = 2026-06. Requetes mutent l'etat : jouer de haut en bas.
+###############################################################################
+@walletHost = http://localhost:8080
+@paymentHost = http://localhost:8081
+
+###############################################################################
+# PAYMENT-SERVICE (8081) — tests directs
+###############################################################################
+
+### 1) Impayees mois courant wallet 3 (tous) — attendu: 200
+GET {{paymentHost}}/api/factures/WLT-0000003/current
+
+### 2) Impayees mois courant wallet 3 (WOYAFAL) — attendu: 200
+GET {{paymentHost}}/api/factures/WLT-0000003/current?unite=WOYAFAL
+
+### 3) Impayees mois courant wallet 3 (ISM) — attendu: 200
+GET {{paymentHost}}/api/factures/WLT-0000003/current?unite=ISM
+
+### 4) Impayees periode 2026-05-01 -> 2026-07-01 wallet 3 — attendu: 200
+GET {{paymentHost}}/api/factures/WLT-0000003/periode?debut=2026-05-01&fin=2026-07-01
+
+### 5) Pay-current ISM montant errone — attendu: 400
+POST {{paymentHost}}/api/factures/pay-current
+Content-Type: application/json
+
+{
+  "walletCode": "WLT-0000003",
+  "service": "ISM",
+  "amount": 1
+}
+
+### 6) Pay-current ISM mois courant — attendu: 200
+POST {{paymentHost}}/api/factures/pay-current
+Content-Type: application/json
+
+{
+  "walletCode": "WLT-0000003",
+  "service": "ISM",
+  "amount": 150000
+}
+
+### 7) Pay-by-references ISM wallet 3 — attendu: 200
+POST {{paymentHost}}/api/factures/pay-by-references
+Content-Type: application/json
+
+{
+  "walletCode": "WLT-0000003",
+  "service": "ISM",
+  "references": ["FAC-ISM-3-1", "FAC-ISM-3-3"]
+}
+
+### 8) Pay-by-references reference deja payee — attendu: 409
+POST {{paymentHost}}/api/factures/pay-by-references
+Content-Type: application/json
+
+{
+  "walletCode": "WLT-0000003",
+  "service": "ISM",
+  "references": ["FAC-ISM-3-1"]
+}
+
+### 9) Pay-by-references reference d'une autre wallet — attendu: 400
+POST {{paymentHost}}/api/factures/pay-by-references
+Content-Type: application/json
+
+{
+  "walletCode": "WLT-0000003",
+  "service": "ISM",
+  "references": ["FAC-ISM-1-1"]
+}
+
+### 10) Pay-by-references reference inconnue — attendu: 404
+POST {{paymentHost}}/api/factures/pay-by-references
+Content-Type: application/json
+
+{
+  "walletCode": "WLT-0000003",
+  "service": "ISM",
+  "references": ["FAC-ISM-3-999"]
+}
+
+###############################################################################
+# BADWALLET-API (8080) — Wallets
+###############################################################################
+
+### 1) Creation nominale d'une wallet — attendu: 201
+POST {{walletHost}}/api/wallets
+Content-Type: application/json
+
+{
+  "phoneNumber": "+221779998877",
+  "email": "testclient@gmail.com",
+  "initialBalance": 25000,
+  "code": "WLT-TEST001",
+  "currency": "XOF"
+}
+
+### 2) Re-creation avec le meme code WLT-TEST001 — attendu: 409
+POST {{walletHost}}/api/wallets
+Content-Type: application/json
+
+{
+  "phoneNumber": "+221779998877",
+  "email": "testclient@gmail.com",
+  "initialBalance": 25000,
+  "code": "WLT-TEST001",
+  "currency": "XOF"
+}
+
+### 3) Creation avec body invalide (initialBalance negatif) — attendu: 400
+POST {{walletHost}}/api/wallets
+Content-Type: application/json
+
+{
+  "phoneNumber": "",
+  "email": "testclient@gmail.com",
+  "initialBalance": -5,
+  "code": "WLT-TEST002",
+  "currency": "XOF"
+}
+
+### Lister les wallets (page 0, taille 10) — attendu: 200
+GET {{walletHost}}/api/wallets?page=0&size=10
+
+# NOTE : les 3 requetes ci-dessous supposent que la wallet +221779998877 existe
+# (creee par la requete de creation nominale plus haut dans cette section).
+
+### Consulter une wallet par telephone — attendu: 200
+GET {{walletHost}}/api/wallets/+221779998877
+
+### Consulter le solde d'une wallet — attendu: 200
+GET {{walletHost}}/api/wallets/+221779998877/balance
+
+### Consulter une wallet inexistante — attendu: 404
+GET {{walletHost}}/api/wallets/+221700000000
+
+###############################################################################
+# BADWALLET-API (8080) — Depots
+###############################################################################
+
+# NOTE : les depots ci-dessous visent la wallet d'id 1, soit celle creee par la
+# requete de creation nominale plus haut dans cette section (sur base fraiche).
+
+### Depot par carte sur wallet id 1 — attendu: 200
+POST {{walletHost}}/api/wallets/1/deposit
+Content-Type: application/json
+
+{ "amount": 50000.00, "paymentMethod": "CREDIT_CARD" }
+
+### Depot depuis une autre wallet (libelle) sur wallet id 1 — attendu: 200
+POST {{walletHost}}/api/wallets/1/deposit
+Content-Type: application/json
+
+{ "amount": 10000.00, "paymentMethod": "WALLET_TARGET" }
+
+### Depot sur wallet inexistante — attendu: 404
+POST {{walletHost}}/api/wallets/999/deposit
+Content-Type: application/json
+
+{ "amount": 5000.00, "paymentMethod": "CREDIT_CARD" }
+
+###############################################################################
+# BADWALLET-API (8080) — Retraits
+###############################################################################
+
+# NOTE : les retraits ci-dessous supposent que la wallet +221779998877 existe
+# avec du solde (creee par la requete de creation nominale plus haut).
+
+### Retrait normal (frais 1%) — attendu: 200
+POST {{walletHost}}/api/wallets/withdraw
+Content-Type: application/json
+
+{ "phoneNumber": "+221779998877", "amount": 10000.00 }
+
+### Retrait montant superieur au solde — attendu: 400
+POST {{walletHost}}/api/wallets/withdraw
+Content-Type: application/json
+
+{ "phoneNumber": "+221779998877", "amount": 99999999.00 }
