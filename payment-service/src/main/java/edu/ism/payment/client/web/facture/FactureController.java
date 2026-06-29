@@ -35,7 +35,7 @@ public class FactureController {
         this.factureMapper = factureMapper;
     }
 
-    // 1 & 2) Factures impayees du mois courant (unite = ISM|WOYAFAL optionnel).
+    // Factures impayees du mois courant (unite = ISM|WOYAFAL optionnel).
     @GetMapping("/{walletCode}/current")
     public ResponseEntity<RestResponse<List<FactureResponseDto>>> getCurrentUnpaid(
             @PathVariable String walletCode,
@@ -45,7 +45,7 @@ public class FactureController {
         return ResponseEntity.status(HttpStatus.OK).body(RestResponse.success(dtos, HttpStatus.OK));
     }
 
-    // 3) Factures impayees dont le mois est dans [debut, fin].
+    // Factures impayees dont le mois est dans [debut, fin].
     @GetMapping("/{walletCode}/periode")
     public ResponseEntity<RestResponse<List<FactureResponseDto>>> getUnpaidInPeriod(
             @PathVariable String walletCode,
@@ -56,7 +56,7 @@ public class FactureController {
         return ResponseEntity.status(HttpStatus.OK).body(RestResponse.success(dtos, HttpStatus.OK));
     }
 
-    // 4) Paie la facture impayee du mois courant pour ce service.
+    // Paie la facture impayee du mois courant pour ce service.
     @PostMapping("/pay-current")
     public ResponseEntity<RestResponse<FactureResponseDto>> payCurrent(
             @Valid @RequestBody PayCurrentRequestDto request) {
@@ -65,7 +65,7 @@ public class FactureController {
         return ResponseEntity.status(HttpStatus.OK).body(RestResponse.success(dto, HttpStatus.OK));
     }
 
-    // 5) Paie les factures listees par reference (toutes ou aucune).
+    // Paie les factures listees par reference (toutes ou aucune).
     @PostMapping("/pay-by-references")
     public ResponseEntity<RestResponse<List<FactureResponseDto>>> payByReferences(
             @Valid @RequestBody PayByReferencesRequestDto request) {
