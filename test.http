@@ -120,3 +120,6 @@ Content-Type: application/json
   "code": "WLT-TEST002",
   "currency": "XOF"
 }
+
+### Lister les wallets (page 0, taille 10) — attendu: 200
+GET {{walletHost}}/api/wallets?page=0&size=10
