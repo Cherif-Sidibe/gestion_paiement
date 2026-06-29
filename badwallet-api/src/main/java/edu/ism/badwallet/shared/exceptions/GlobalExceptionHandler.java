@@ -25,6 +25,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(409).body(RestResponse.error(ex.getMessage(), HttpStatus.CONFLICT));
     }
 
+    @ExceptionHandler(SoldeInsuffisantException.class)
+    public ResponseEntity<RestResponse> handleSoldeInsuffisantException(SoldeInsuffisantException ex) {
+        return ResponseEntity.status(400).body(RestResponse.error(ex.getMessage(), HttpStatus.BAD_REQUEST));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<RestResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
