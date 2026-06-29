@@ -123,3 +123,15 @@ Content-Type: application/json
 
 ### Lister les wallets (page 0, taille 10) — attendu: 200
 GET {{walletHost}}/api/wallets?page=0&size=10
+
+# NOTE : les 3 requetes ci-dessous supposent que la wallet +221779998877 existe
+# (creee par la requete de creation nominale plus haut dans cette section).
+
+### Consulter une wallet par telephone — attendu: 200
+GET {{walletHost}}/api/wallets/+221779998877
+
+### Consulter le solde d'une wallet — attendu: 200
+GET {{walletHost}}/api/wallets/+221779998877/balance
+
+### Consulter une wallet inexistante — attendu: 404
+GET {{walletHost}}/api/wallets/+221700000000

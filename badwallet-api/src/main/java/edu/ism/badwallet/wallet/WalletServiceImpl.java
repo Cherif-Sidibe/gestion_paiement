@@ -3,6 +3,7 @@ package edu.ism.badwallet.wallet;
 import edu.ism.badwallet.client.web.wallet.WalletCreateMapper;
 import edu.ism.badwallet.client.web.wallet.dto.WalletCreateRequestDto;
 import edu.ism.badwallet.client.web.wallet.dto.WalletCreateResponseDto;
+import edu.ism.badwallet.shared.exceptions.EntityNotFoundException;
 import jakarta.persistence.EntityExistsException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,5 +39,18 @@ public class WalletServiceImpl implements WalletService {
     @Override
     public Page<Wallet> findAllWallets(Pageable pageable) {
         return walletRepository.findAll(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Wallet getWalletByPhone(String phone) {
+        return walletRepository.findByPhoneNumber(phone)
+                .orElseThrow(() -> new EntityNotFoundException("Wallet introuvable pour le numero " + phone));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Wallet getBalanceByPhone(String phone) {
+        return getWalletByPhone(phone);
     }
 }
