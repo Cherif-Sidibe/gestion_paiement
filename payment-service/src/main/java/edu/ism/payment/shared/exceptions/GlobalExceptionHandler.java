@@ -25,6 +25,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(409).body(RestResponse.error(ex.getMessage(), HttpStatus.CONFLICT));
     }
 
+    @ExceptionHandler(FactureNotFoundException.class)
+    public ResponseEntity<RestResponse> handleFactureNotFoundException(FactureNotFoundException ex) {
+        return ResponseEntity.status(404).body(RestResponse.error(ex.getMessage(), HttpStatus.NOT_FOUND));
+    }
+
+    @ExceptionHandler(FactureAlreadyPaidException.class)
+    public ResponseEntity<RestResponse> handleFactureAlreadyPaidException(FactureAlreadyPaidException ex) {
+        return ResponseEntity.status(409).body(RestResponse.error(ex.getMessage(), HttpStatus.CONFLICT));
+    }
+
+    @ExceptionHandler(FactureNotForWalletException.class)
+    public ResponseEntity<RestResponse> handleFactureNotForWalletException(FactureNotForWalletException ex) {
+        return ResponseEntity.status(400).body(RestResponse.error(ex.getMessage(), HttpStatus.BAD_REQUEST));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<RestResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
