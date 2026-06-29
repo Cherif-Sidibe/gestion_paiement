@@ -80,3 +80,43 @@ Content-Type: application/json
   "service": "ISM",
   "references": ["FAC-ISM-3-999"]
 }
+
+###############################################################################
+# BADWALLET-API (8080) — Wallets
+###############################################################################
+
+### 1) Creation nominale d'une wallet — attendu: 201
+POST {{walletHost}}/api/wallets
+Content-Type: application/json
+
+{
+  "phoneNumber": "+221779998877",
+  "email": "testclient@gmail.com",
+  "initialBalance": 25000,
+  "code": "WLT-TEST001",
+  "currency": "XOF"
+}
+
+### 2) Re-creation avec le meme code WLT-TEST001 — attendu: 409
+POST {{walletHost}}/api/wallets
+Content-Type: application/json
+
+{
+  "phoneNumber": "+221779998877",
+  "email": "testclient@gmail.com",
+  "initialBalance": 25000,
+  "code": "WLT-TEST001",
+  "currency": "XOF"
+}
+
+### 3) Creation avec body invalide (initialBalance negatif) — attendu: 400
+POST {{walletHost}}/api/wallets
+Content-Type: application/json
+
+{
+  "phoneNumber": "",
+  "email": "testclient@gmail.com",
+  "initialBalance": -5,
+  "code": "WLT-TEST002",
+  "currency": "XOF"
+}
