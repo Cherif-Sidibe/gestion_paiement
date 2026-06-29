@@ -364,3 +364,24 @@ Content-Type: application/json
   "serviceName": "WOYAFAL",
   "amount": 15000
 }
+
+###############################################################################
+# SEED (badwallet) — peuplement de donnees realistes (feature/wallet-seeder)
+#
+# Deux mecanismes coexistent :
+#  - AUTO-SEED au demarrage : un CommandLineRunner seede ~10 wallets si la base
+#    est vide (H2 en memoire => rejoue a chaque lancement). Rien a appeler.
+#  - ENDPOINT ci-dessous : @Async, repond 202 immediatement, le seed tourne en
+#    fond. La numerotation reprend apres les wallets existants (pas de collision).
+###############################################################################
+
+### S1) Seed asynchrone : 3 wallets de 20 evenements — attendu: 202 immediat
+# Apres un court instant : 3 wallets de plus en base (ex. WLT-0000011 -> WLT-0000013),
+# chacun avec un historique coherent (aucun solde negatif).
+POST {{walletHost}}/api/wallets/seed?numWallets=3&eventsPerWallet=20
+
+### S2) Verifier les wallets seedes (soldes > 0) — attendu: 200
+GET {{walletHost}}/api/wallets?page=0&size=20
+
+### S3) Historique d'une wallet seedee (mix DEPOT/RETRAIT/TRANSFERT, dates etalees) — attendu: 200
+GET {{walletHost}}/api/wallets/+221770000003/transactions
