@@ -135,3 +135,28 @@ GET {{walletHost}}/api/wallets/+221779998877/balance
 
 ### Consulter une wallet inexistante — attendu: 404
 GET {{walletHost}}/api/wallets/+221700000000
+
+###############################################################################
+# BADWALLET-API (8080) — Depots
+###############################################################################
+
+# NOTE : les depots ci-dessous visent la wallet d'id 1, soit celle creee par la
+# requete de creation nominale plus haut dans cette section (sur base fraiche).
+
+### Depot par carte sur wallet id 1 — attendu: 200
+POST {{walletHost}}/api/wallets/1/deposit
+Content-Type: application/json
+
+{ "amount": 50000.00, "paymentMethod": "CREDIT_CARD" }
+
+### Depot depuis une autre wallet (libelle) sur wallet id 1 — attendu: 200
+POST {{walletHost}}/api/wallets/1/deposit
+Content-Type: application/json
+
+{ "amount": 10000.00, "paymentMethod": "WALLET_TARGET" }
+
+### Depot sur wallet inexistante — attendu: 404
+POST {{walletHost}}/api/wallets/999/deposit
+Content-Type: application/json
+
+{ "amount": 5000.00, "paymentMethod": "CREDIT_CARD" }
